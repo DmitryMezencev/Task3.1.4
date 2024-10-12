@@ -2,10 +2,9 @@
 <html lang="en" xmlns:th="http://thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>USER PAGE</title>
 </head>
 <body>
-
 <form th:method="GET" th:action="@{/user}" th:object="${user}">
     <table border="1" style="width:50%;margin:auto;">
         <tr>
@@ -24,8 +23,6 @@
         </tr>
     </table>
 </form>
-
     <a href="/logout">Logout</a>
-
 </body>
 </html>
