@@ -8,6 +8,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import ru.kata.spring.boot_security.demo.models.User;
 import ru.kata.spring.boot_security.demo.services.UserService;
+import ru.kata.spring.boot_security.demo.util.UserValidator;
 
 import javax.validation.Valid;
 
@@ -15,12 +16,13 @@ import javax.validation.Valid;
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
-
-    private UserService userService;
+    private final UserService userService;
+    private final UserValidator userValidator;
 
     @Autowired
-    public AdminController(UserService userService) {
+    public AdminController(UserService userService, UserValidator userValidator) {
         this.userService = userService;
+        this.userValidator = userValidator;
     }
 
     @GetMapping()
@@ -36,6 +38,8 @@ public class AdminController {
 
     @PostMapping()
     public String addUser(@ModelAttribute("user") @Valid User user, BindingResult bindingResult) {
+        userValidator.validate(user, bindingResult);
+
         if (bindingResult.hasErrors()) {
             return "/new";
         }
@@ -44,14 +48,16 @@ public class AdminController {
     }
 
     @GetMapping("/{id}/edit")
-    public String edit(Model model, @RequestParam(value = "id") int id) {
+    public String edit(Model model, @RequestParam(value = "id") Long id) {
         model.addAttribute("user", userService.getUserById(id));
         return "edit";
     }
 
     @PostMapping("/{id}")
     public String updateUser(@ModelAttribute("user") @Valid User user, BindingResult bindingResult,
-                             @RequestParam(value = "id") int id) {
+                             @RequestParam(value = "id") Long id) {
+        userValidator.validate(user, bindingResult);
+
         if (bindingResult.hasErrors()) {
             return "/edit";
         }
@@ -60,7 +66,7 @@ public class AdminController {
     }
 
     @PostMapping("/{id}/delete")
-    public String deleteUser(@ModelAttribute("user") User user, @RequestParam(value = "id") int id) {
+    public String deleteUser(@ModelAttribute("user") User user, @RequestParam(value = "id") Long id) {
         userService.deleteUser(id);
         return "redirect:/admin";
     }

@@ -1,15 +1,15 @@
 package ru.kata.spring.boot_security.demo.models;
 
-
-import jdk.jfr.Unsigned;
-import org.hibernate.validator.constraints.UniqueElements;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -18,10 +18,9 @@ import java.util.stream.Collectors;
 @Entity
 @Table(name = "users")
 public class User {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
     @Pattern(regexp = "^[a-zA-Z ]+$", message = "Name must not contain numbers")
     @NotEmpty(message = "Name should not be empty")
@@ -37,13 +36,15 @@ public class User {
 
     @NotEmpty(message = "Email should not be empty")
     @Email(message = "Email should be valid")
-    @Column(name = "email")
+    @Column(name = "email", unique = true)
     private String email;
 
     @Column(name = "password")
     private String password;
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @ManyToMany(fetch = FetchType.LAZY)
+    @LazyCollection(LazyCollectionOption.EXTRA)
+    @Fetch(FetchMode.JOIN)
     @JoinTable(name = "users_roles",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
@@ -58,11 +59,11 @@ public class User {
         this.email = email;
     }
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -107,11 +108,11 @@ public class User {
     }
 
     public List<String> getRoleName() {
-        return roles.stream().map(r -> r.getRoleName()).collect(Collectors.toList());
+        return roles.stream().map(Role::getRoleName).collect(Collectors.toList());
     }
 
     public List<Long> getRoleId() {
-        return roles.stream().map(r -> r.getRoleId()).collect(Collectors.toList());
+        return roles.stream().map(Role::getRoleId).collect(Collectors.toList());
     }
 
     @Override

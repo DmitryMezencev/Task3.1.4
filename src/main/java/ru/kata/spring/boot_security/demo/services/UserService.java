@@ -18,9 +18,8 @@ import java.util.Optional;
 @Service
 @Transactional(readOnly = true)
 public class UserService implements UserDetailsService {
-
-    private UserRepository userRepository;
-    private PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
     public UserService(UserRepository userRepository) {
@@ -50,12 +49,16 @@ public class UserService implements UserDetailsService {
     }
 
     @Transactional
-    public void deleteUser(long id) {
+    public void deleteUser(Long id) {
         userRepository.deleteById(id);
     }
 
     public User findByUsername(String username) {
         return userRepository.findByUsername(username);
+    }
+
+    public User findByEmail(String email) {
+        return userRepository.findByEmail(email);
     }
 
     @Override

@@ -16,8 +16,7 @@ import ru.kata.spring.boot_security.demo.services.UserService;
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
-
-    private UserService userService;
+    private final UserService userService;
 
     @Autowired
     public WebSecurityConfig(UserService userService) {
