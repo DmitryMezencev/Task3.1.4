@@ -16,7 +16,6 @@ public class UserValidator implements Validator {
         this.userService = userService;
     }
 
-
     @Override
     public boolean supports(Class<?> aClass) {
         return User.class.equals(aClass);
@@ -26,14 +25,8 @@ public class UserValidator implements Validator {
     public void validate(Object o, Errors errors) {
         User user = (User) o;
 
-        if (userService.findByUsername(user.getUsername()) != null) {
-            User userFromDb = userService.findByUsername(user.getUsername());
-            if (!userFromDb.getId().equals(user.getId())) {
-                errors.rejectValue("username", "", "Username already exists");
-            }
-        }
-        if (userService.findByEmail(user.getEmail()) != null) {
-            User userFromDb = userService.findByEmail(user.getEmail());
+        if (userService.findByUsername(user.getEmail()) != null) {
+            User userFromDb = userService.findByUsername(user.getEmail());
             if (!userFromDb.getId().equals(user.getId())) {
                 errors.rejectValue("email", "", "Email already exists");
             }

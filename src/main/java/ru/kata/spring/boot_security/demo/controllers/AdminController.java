@@ -11,6 +11,7 @@ import ru.kata.spring.boot_security.demo.services.UserService;
 import ru.kata.spring.boot_security.demo.util.UserValidator;
 
 import javax.validation.Valid;
+import java.security.Principal;
 
 
 @Controller
@@ -25,48 +26,53 @@ public class AdminController {
         this.userValidator = userValidator;
     }
 
-    @GetMapping()
-    public String users(Model model) {
+    @GetMapping("")
+    public String adminPage(Model model, Principal principal) {
+        model.addAttribute("currentUser", userService.findByUsername(principal.getName()));
         model.addAttribute("users", userService.getAllUsers());
+        model.addAttribute("roles", userService.getAllRoles());
+        model.addAttribute("newUser", new User());
         return "admin";
     }
 
     @GetMapping("/new")
-    public String newUser(@ModelAttribute("user") User user) {
-        return "new";
+    public String newUser(@ModelAttribute("user") User user, Model model) {
+        model.addAttribute("roles", userService.getAllRoles());
+        return "admin";
     }
 
-    @PostMapping()
+    @PostMapping("/new")
     public String addUser(@ModelAttribute("user") @Valid User user, BindingResult bindingResult) {
         userValidator.validate(user, bindingResult);
 
         if (bindingResult.hasErrors()) {
-            return "/new";
+            return "admin";
         }
         userService.addUser(user);
         return "redirect:/admin";
     }
 
-    @GetMapping("/{id}/edit")
-    public String edit(Model model, @RequestParam(value = "id") Long id) {
+    @GetMapping("/edit/{id}")
+    public String edit(@PathVariable("id") Long id, Model model) {
         model.addAttribute("user", userService.getUserById(id));
-        return "edit";
+        model.addAttribute("roles", userService.getAllRoles());
+        return "admin";
     }
 
-    @PostMapping("/{id}")
-    public String updateUser(@ModelAttribute("user") @Valid User user, BindingResult bindingResult,
-                             @RequestParam(value = "id") Long id) {
+    @PostMapping("/edit/{id}")
+    public String updateUser(@PathVariable("id") Long id, @ModelAttribute("user") @Valid User user,
+                             BindingResult bindingResult) {
         userValidator.validate(user, bindingResult);
 
         if (bindingResult.hasErrors()) {
-            return "/edit";
+            return "/admin";
         }
         userService.updateUser(id, user);
         return "redirect:/admin";
     }
 
-    @PostMapping("/{id}/delete")
-    public String deleteUser(@ModelAttribute("user") User user, @RequestParam(value = "id") Long id) {
+    @PostMapping("/delete/{id}")
+    public String deleteUser(@ModelAttribute("user") User user, @PathVariable("id") Long id) {
         userService.deleteUser(id);
         return "redirect:/admin";
     }

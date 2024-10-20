@@ -8,21 +8,27 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.kata.spring.boot_security.demo.models.Role;
 import ru.kata.spring.boot_security.demo.models.User;
+import ru.kata.spring.boot_security.demo.repositories.RoleRepository;
 import ru.kata.spring.boot_security.demo.repositories.UserRepository;
 
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 @Transactional(readOnly = true)
 public class UserService implements UserDetailsService {
+
+    private final RoleRepository roleRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserService(UserRepository userRepository) {
+    public UserService(RoleRepository roleRepository, UserRepository userRepository) {
+        this.roleRepository = roleRepository;
         this.userRepository = userRepository;
         this.passwordEncoder = new BCryptPasswordEncoder();
     }
@@ -36,6 +42,10 @@ public class UserService implements UserDetailsService {
         return foundUser.orElse(null);
     }
 
+    public List<Role> getAllRoles() {
+        return roleRepository.findAll();
+    }
+
     @Transactional
     public void addUser(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
@@ -45,6 +55,18 @@ public class UserService implements UserDetailsService {
     @Transactional
     public void updateUser(long id, User updatedUser) {
         updatedUser.setId(id);
+
+        User existingUser = userRepository.findById(id).orElse(null);
+
+        if (updatedUser.getPassword() == null || updatedUser.getPassword().isEmpty()) {
+            updatedUser.setPassword(existingUser.getPassword());
+        } else {
+            updatedUser.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
+        }
+
+        if (updatedUser.getRoles() == null) {
+            updatedUser.setRoles(existingUser.getRoles());
+        }
         userRepository.save(updatedUser);
     }
 
@@ -53,20 +75,16 @@ public class UserService implements UserDetailsService {
         userRepository.deleteById(id);
     }
 
-    public User findByUsername(String username) {
-        return userRepository.findByUsername(username);
-    }
-
-    public User findByEmail(String email) {
+    public User findByUsername(String email) {
         return userRepository.findByEmail(email);
     }
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByUsername(username);
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        User user = userRepository.findByEmail(email);
 
         if (user == null) {
-            throw new UsernameNotFoundException(String.format("User '%s' not found", username));
+            throw new UsernameNotFoundException(String.format("User '%s' not found", email));
         }
 
         return new ru.kata.spring.boot_security.demo.security.UserDetails(user);
