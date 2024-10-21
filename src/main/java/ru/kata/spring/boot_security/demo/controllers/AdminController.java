@@ -46,7 +46,7 @@ public class AdminController {
         userValidator.validate(user, bindingResult);
 
         if (bindingResult.hasErrors()) {
-            return "admin";
+            return "redirect:/admin";
         }
         userService.addUser(user);
         return "redirect:/admin";
@@ -65,7 +65,7 @@ public class AdminController {
         userValidator.validate(user, bindingResult);
 
         if (bindingResult.hasErrors()) {
-            return "/admin";
+            return "redirect:/admin";
         }
         userService.updateUser(id, user);
         return "redirect:/admin";
