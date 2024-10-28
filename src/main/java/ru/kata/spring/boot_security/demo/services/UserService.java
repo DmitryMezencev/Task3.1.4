@@ -14,7 +14,6 @@ import ru.kata.spring.boot_security.demo.repositories.RoleRepository;
 import ru.kata.spring.boot_security.demo.repositories.UserRepository;
 
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,6 +43,11 @@ public class UserService implements UserDetailsService {
 
     public List<Role> getAllRoles() {
         return roleRepository.findAll();
+    }
+
+    public Role getRoleById(long id) {
+        Optional<Role> foundRole = roleRepository.findById(id);
+        return foundRole.orElse(null);
     }
 
     @Transactional
@@ -89,4 +93,6 @@ public class UserService implements UserDetailsService {
 
         return new ru.kata.spring.boot_security.demo.security.UserDetails(user);
     }
+
+
 }
